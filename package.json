@@ -1,11 +1,11 @@
 {
   "name": "extension-analyzer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Analyzes a repository to determine how many files match the provided file extensions. It will breakdown the results according to the CODEOWNERS file",
   "homepage": "https://github.com/AndrewSmithDev/extension-analyzer#readme",
   "main": "index.js",
-  "scripts": {
-    "start": "node index.js"
+  "bin": {
+    "extension-analyzer": "index.js"
   },
   "author": "Andrew Smith",
   "license": "MIT"

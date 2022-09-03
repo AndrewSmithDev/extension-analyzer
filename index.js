@@ -1,8 +1,7 @@
 const fs = require("fs");
 
 const startingDir = process.argv[2];
-const desiredExtension = process.argv[3];
-const replacementExtension = process.argv[4];
+const extensions = process.argv.splice(3);
 
 const getCodeOwners = () => {
   const fileContent = fs.readFileSync(
@@ -52,19 +51,12 @@ const sortByFileOwners = (owners, files) => {
 const files = getFiles(startingDir);
 const owners = getCodeOwners();
 
-const desiredFiles = getMatchingFileExtensions(
-  new RegExp(desiredExtension),
-  files
-);
-const replacementFiles = getMatchingFileExtensions(
-  new RegExp(replacementExtension),
-  files
-);
+const output = extensions.reduce((output, ext) => {
+  const matchingFiles = getMatchingFileExtensions(new RegExp(ext), files);
+  return {
+    ...output,
+    [ext]: sortByFileOwners(owners, matchingFiles),
+  };
+}, {});
 
-const desiredOwners = sortByFileOwners(owners, desiredFiles);
-const replacementOwners = sortByFileOwners(owners, replacementFiles);
-
-console.log({
-  [desiredExtension]: desiredOwners,
-  [replacementExtension]: replacementOwners,
-});
+console.log(output);

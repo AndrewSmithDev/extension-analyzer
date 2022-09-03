@@ -2,6 +2,7 @@ const fs = require("fs");
 
 const startingDir = process.argv[2];
 const extensions = process.argv.splice(3);
+const extensionRegex = extensions.map((ext) => new RegExp(`(\\.${ext})$`));
 
 const getCodeOwners = () => {
   const fileContent = fs.readFileSync(
@@ -29,34 +30,37 @@ const getFiles = (currentDir) => {
   });
 };
 
-const getMatchingFileExtensions = (extension, files) =>
-  files.filter((file) => extension.test(file));
-
-const findFileOwner = (owners, file) => {
-  return Object.entries(owners).find(([owner, directories]) =>
-    directories.find((dir) => file.startsWith(dir))
+const getFileOwner = (owners, file) => {
+  return Object.entries(owners).find(([owner, dirs]) =>
+    dirs.find((dir) => file.startsWith(dir))
   )?.[0];
 };
 
-const sortByFileOwners = (owners, files) => {
+const getFileExtension = (file) => {
+  const index = extensionRegex.findIndex((ext) => ext.test(file));
+  const val = extensions[index];
+  return val;
+};
+
+const sortFilesByOwner = (files, owners) => {
   return files.reduce((output, file) => {
-    const owner = findFileOwner(owners, file);
+    const owner = getFileOwner(owners, file);
     if (owner === undefined) return output;
-    if (output[owner] === undefined) output[owner] = 1;
-    else output[owner] = output[owner] + 1;
+
+    const fileExtension = getFileExtension(file);
+    if (fileExtension === undefined) return output;
+
+    if (output[owner] === undefined) output[owner] = {};
+    if (output[owner][fileExtension] === undefined)
+      output[owner][fileExtension] = 1;
+    else output[owner][fileExtension] += 1;
+
     return output;
   }, {});
 };
 
 const files = getFiles(startingDir);
 const owners = getCodeOwners();
+const output = sortFilesByOwner(files, owners);
 
-const output = extensions.reduce((output, ext) => {
-  const matchingFiles = getMatchingFileExtensions(new RegExp(ext), files);
-  return {
-    ...output,
-    [ext]: sortByFileOwners(owners, matchingFiles),
-  };
-}, {});
-
-console.log(output);
+console.log(JSON.stringify(output, null, 2));

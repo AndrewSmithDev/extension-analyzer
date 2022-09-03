@@ -4,6 +4,19 @@ const fs = require("fs");
 
 const startingDir = process.argv[2];
 const extensions = process.argv.splice(3);
+
+if (startingDir === undefined) {
+  console.log("No path provided");
+  console.log("Example call: extension-analyzer ~/project/example jsx? tsx?");
+  process.exit(-1);
+}
+
+if (extensions.length === 0) {
+  console.log("No extensions provided");
+  console.log("Example call: extension-analyzer ~/project/example jsx? tsx?");
+  process.exit(-1);
+}
+
 const extensionRegex = extensions.map((ext) => new RegExp(`(\\.${ext})$`));
 
 const getCodeOwners = () => {

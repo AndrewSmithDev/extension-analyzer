@@ -1,0 +1,11 @@
+{
+  "name": "extension-analyzer",
+  "version": "1.0.0",
+  "description": "Analyzes a repository to determine how many files match the provided file extensions. It will breakdown the results according to the CODEOWNERS file",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Andrew Smith",
+  "license": "MIT"
+}

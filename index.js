@@ -3,7 +3,7 @@
 const fs = require("fs");
 
 const startingDir = process.argv[2];
-const extensions = process.argv.splice(3);
+const extensionsArg = process.argv.splice(3);
 
 if (startingDir === undefined) {
   console.log("No path provided");
@@ -11,19 +11,19 @@ if (startingDir === undefined) {
   process.exit(-1);
 }
 
-if (extensions.length === 0) {
+if (extensionsArg.length === 0) {
   console.log("No extensions provided");
   console.log("Example call: extension-analyzer ~/project/example jsx? tsx?");
   process.exit(-1);
 }
 
-const extensionRegex = extensions.map((ext) => new RegExp(`(\\.${ext})$`));
+const extensions = extensionsArg.map((ext) => ({
+  name: ext,
+  regex: new RegExp(`(\\.${ext})$`),
+}));
 
-const getCodeOwners = () => {
-  const fileContent = fs.readFileSync(
-    `${startingDir}/.github/CODEOWNERS`,
-    "utf8"
-  );
+const getCodeOwners = (rootDir) => {
+  const fileContent = fs.readFileSync(`${rootDir}/.github/CODEOWNERS`, "utf8");
   const lines = fileContent.split("\n");
 
   return lines.reduce((output, line) => {
@@ -37,11 +37,11 @@ const getCodeOwners = () => {
   }, {});
 };
 
-const getFiles = (currentDir) => {
+const getFiles = (rootDir, currentDir = rootDir) => {
   return fs.readdirSync(currentDir).flatMap((name) => {
     const newPath = `${currentDir}/${name}`;
-    if (fs.lstatSync(newPath).isDirectory()) return getFiles(newPath);
-    return newPath.replace(startingDir, "");
+    if (fs.lstatSync(newPath).isDirectory()) return getFiles(rootDir, newPath);
+    return newPath.replace(rootDir, "");
   });
 };
 
@@ -51,18 +51,17 @@ const getFileOwner = (owners, file) => {
   )?.[0];
 };
 
-const getFileExtension = (file) => {
-  const index = extensionRegex.findIndex((ext) => ext.test(file));
-  const val = extensions[index];
-  return val;
+const getFileExtension = (extensions, file) => {
+  const ext = extensions.find(({ regex }) => regex.test(file));
+  return ext?.name;
 };
 
-const sortFilesByOwner = (files, owners) => {
+const sortFilesByOwner = (extensions, files, owners) => {
   return files.reduce((output, file) => {
     const owner = getFileOwner(owners, file);
     if (owner === undefined) return output;
 
-    const fileExtension = getFileExtension(file);
+    const fileExtension = getFileExtension(extensions, file);
     if (fileExtension === undefined) return output;
 
     if (output[owner] === undefined) output[owner] = {};
@@ -75,7 +74,7 @@ const sortFilesByOwner = (files, owners) => {
 };
 
 const files = getFiles(startingDir);
-const owners = getCodeOwners();
-const output = sortFilesByOwner(files, owners);
+const owners = getCodeOwners(startingDir);
+const output = sortFilesByOwner(extensions, files, owners);
 
 console.log(JSON.stringify(output, null, 2));

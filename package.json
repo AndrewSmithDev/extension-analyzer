@@ -1,6 +1,6 @@
 {
   "name": "extension-analyzer",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Analyzes a repository to determine how many files match the provided file extensions. It will breakdown the results according to the CODEOWNERS file",
   "homepage": "https://github.com/AndrewSmithDev/extension-analyzer#readme",
   "main": "index.mjs",

@@ -5,14 +5,15 @@ export const getCodeOwners = (rootDir) => {
   const lines = fileContent.split("\n");
 
   return lines.reduce((output, line) => {
-    const [path, team] = line.split(" ");
-    if (path === undefined || team === undefined) return output;
+    if (line[0] !== "/") return output;
 
-    if (output[team] === undefined) output[team] = [path];
-    else output[team].push(path);
+    const [path, team] = line.split(" ");
+    if (!path || !team) return output;
+
+    output.push({ team, path });
 
     return output;
-  }, {});
+  }, []);
 };
 
 export const getFiles = (rootDir, currentDir = rootDir) => {
@@ -24,9 +25,15 @@ export const getFiles = (rootDir, currentDir = rootDir) => {
 };
 
 export const getFileOwner = (owners, file) => {
-  return Object.entries(owners).find(([owner, dirs]) =>
-    dirs.find((dir) => file.startsWith(dir))
-  )?.[0];
+  const owner = owners.reduce((currentOwner, nextTeam) => {
+    if (file.startsWith(nextTeam.path)) {
+      if (!currentOwner) return nextTeam;
+      if (nextTeam.path.length > currentOwner.path.length) return nextTeam;
+    }
+    return currentOwner;
+  }, undefined);
+
+  return owner?.team;
 };
 
 export const getFileExtension = (extensions, file) => {
@@ -43,8 +50,7 @@ export const sortFilesByOwner = (extensions, files, owners) => {
     if (fileExtension === undefined) return output;
 
     if (output[owner] === undefined) output[owner] = {};
-    if (output[owner][fileExtension] === undefined)
-      output[owner][fileExtension] = 1;
+    if (output[owner][fileExtension] === undefined) output[owner][fileExtension] = 1;
     else output[owner][fileExtension] += 1;
 
     return output;

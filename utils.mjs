@@ -28,6 +28,10 @@ export const getFileOwner = (owners, file) => {
   const owner = owners.reduce((currentOwner, nextTeam) => {
     if (file.startsWith(nextTeam.path)) {
       if (!currentOwner) return nextTeam;
+      // NOTE: we only want to assign the next team if the nextTeam's path is longer than the
+      // currentOwner so that the team with the more specific path owners the file
+      // i.e. if TeamA owners /src/components/layout and teamB owners /src/components then
+      // TeamA should own all files in /src/components/layout
       if (nextTeam.path.length > currentOwner.path.length) return nextTeam;
     }
     return currentOwner;

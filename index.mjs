@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { getFiles, getCodeOwners, sortFilesByOwner } from "./utils.mjs";
+import { getFiles, getCodeOwners, sortFilesByOwner, getFileCount } from "./utils.mjs";
 
 const startingDir = process.argv[2];
 const extensionsArg = process.argv.splice(3);
@@ -23,6 +23,7 @@ const extensions = extensionsArg.map((ext) => ({
 
 const files = getFiles(startingDir);
 const owners = getCodeOwners(startingDir);
-const output = sortFilesByOwner(extensions, files, owners);
+const filesByOwner = sortFilesByOwner(extensions, files, owners);
+const output = getFileCount(filesByOwner);
 
 console.log(JSON.stringify(output, null, 2));

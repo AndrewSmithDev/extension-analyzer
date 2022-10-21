@@ -54,9 +54,18 @@ export const sortFilesByOwner = (extensions, files, owners) => {
     if (fileExtension === undefined) return output;
 
     if (output[owner] === undefined) output[owner] = {};
-    if (output[owner][fileExtension] === undefined) output[owner][fileExtension] = 1;
-    else output[owner][fileExtension] += 1;
+    if (output[owner][fileExtension] === undefined) output[owner][fileExtension] = [file];
+    else output[owner][fileExtension].push(file);
 
     return output;
   }, {});
+};
+
+export const getFileCount = (filesByOwner) => {
+  return Object.fromEntries(
+    Object.entries(filesByOwner).map(([team, exts]) => {
+      const extsWithCount = Object.entries(exts).map(([ext, files]) => [ext, files.length]);
+      return [team, Object.fromEntries(extsWithCount)];
+    })
+  );
 };

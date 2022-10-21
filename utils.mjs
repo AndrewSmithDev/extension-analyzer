@@ -69,3 +69,15 @@ export const getFileCount = (filesByOwner) => {
     })
   );
 };
+
+export const getLineCount = async (rootDir, files) => {
+  return files.map((file) => [
+    fs.readFileSync(rootDir + file, { encoding: "utf-8" }).split("\n").length,
+    file,
+  ]);
+};
+
+export const outputLineCount = (filesWithLineCount) => {
+  const output = filesWithLineCount.reduce((out, cur) => out + cur.join("\t") + "\n");
+  console.log(output.replaceAll("/src/", ""));
+};

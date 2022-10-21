@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-import { getFiles, getCodeOwners, sortFilesByOwner, getFileCount } from "./utils.mjs";
+import { countFiles } from "./count-files.mjs";
+import { listFiles } from "./get-file-list.mjs";
 
-const startingDir = process.argv[2];
-const extensionsArg = process.argv.splice(3);
+const action = process.argv[2];
+const startingDir = process.argv[3];
 
 if (startingDir === undefined) {
   console.log("No path provided");
@@ -10,20 +11,23 @@ if (startingDir === undefined) {
   process.exit(-1);
 }
 
-if (extensionsArg.length === 0) {
-  console.log("No extensions provided");
-  console.log("Example call: extension-analyzer ~/project/example jsx? tsx?");
-  process.exit(-1);
+if (action === "--count") {
+  const extensionsArg = process.argv.splice(4);
+  if (extensionsArg.length === 0) {
+    console.log("No extensions provided");
+    console.log("Example call: extension-analyzer ~/project/example jsx? tsx?");
+    process.exit(-1);
+  }
+  const extensions = extensionsArg.map((ext) => ({
+    name: ext,
+    regex: new RegExp(`(\\.${ext})$`),
+  }));
+
+  countFiles(startingDir, extensions);
 }
 
-const extensions = extensionsArg.map((ext) => ({
-  name: ext,
-  regex: new RegExp(`(\\.${ext})$`),
-}));
-
-const files = getFiles(startingDir);
-const owners = getCodeOwners(startingDir);
-const filesByOwner = sortFilesByOwner(extensions, files, owners);
-const output = getFileCount(filesByOwner);
-
-console.log(JSON.stringify(output, null, 2));
+if (action === "--list") {
+  const extension = process.argv[4];
+  const team = process.argv[5];
+  listFiles(startingDir, extension, team);
+}

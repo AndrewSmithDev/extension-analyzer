@@ -78,6 +78,6 @@ export const getLineCount = async (rootDir, files) => {
 };
 
 export const outputLineCount = (filesWithLineCount) => {
-  const output = filesWithLineCount.reduce((out, cur) => out + cur.join("\t") + "\n");
+  const output = filesWithLineCount.reduce((out, cur) => out + cur.join("\t") + "\n", "\n");
   console.log(output.replaceAll("/src/", ""));
 };
